@@ -3,3 +3,10 @@
 .RData
 .Ruserdata
 data
+.httr-oauth
+
+*.JPG
+*.csv
+*.RDS
+*.txt
+*.zip
