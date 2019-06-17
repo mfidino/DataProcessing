@@ -1,6 +1,7 @@
 source("./functions/parse_tags.R")
 source("./functions/melt_tags.R")
 source("./functions/fix_conventions.R")
+source('./functions/aggregate_ids.R')
 
 
 package_load<-function(packages = NULL, quiet=TRUE, verbose=FALSE, warn.conflicts=FALSE){

@@ -43,11 +43,11 @@ pielou <- function(photo_id = NULL){
      
      
      
-     to_return <- list(support = sort(Pi, decreasing = TRUE),
-                       blank   = )
-     return(answer)
+     to_return <- left_join(pielou, photo_id, by = 'subject_id')
+     cat('Reminder: pielou = 0 is high agreement, 1 = low agreement')
+     return(to_return)
      
-     
+
 }
 
 aggregate_photoID <- function(photos = NULL, annotations = NULL){
@@ -55,7 +55,7 @@ aggregate_photoID <- function(photos = NULL, annotations = NULL){
       #                          photos$workflow_version,
        #                         photos$id, sep = "-")
      
-     ans <- left_join(photos[,c("subject_id", "classification_id")],
+     ans <- left_join(photos,
                       annotations, by = "classification_id")
      return(ans)
 }

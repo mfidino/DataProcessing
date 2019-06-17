@@ -1,35 +1,18 @@
+# source the necessary scripts
 source("sourcer.R")
 
+ # load the necessary packages
 packs <- c("jsonlite", "dplyr", "stringr", "lubridate", "reshape2",
            "doParallel", "data.table")
-
 package_load(packs)
 
 
 
 # Specify Project
-classifications_file <- "main-la-river-project-classifications.csv"
-classifications_file <- "data/chicago-wildlife-watch-classifications.csv"
+classifications_file <- "my_classification_csv_from_zooniverse.csv"
 
 # Read in the data.
 jdata <- read.csv(classifications_file, stringsAsFactors = FALSE)
-
-#saveRDS(jdata, "jdata.RDS")
-
-jdata <- readRDS("jdata.RDS")
-
-# Chicago also needs to deal wth these versions too, possibly with separate calls to the flattening script, depending on the task structures. 
-# workflow_id_num <- 2334
-# workflow_version_num <- c(397.41, 406.45)
-# workflow_id_num <- 3054
-# workflow_version_num <- 5.70
-
-
-# limit to relevant workflow id and version
-
-
-set.seed(-160)
-my_samp <- sort(sample(1:nrow(jdata), 50000))
 
 # parse through the different annotations and workflows
 my_annos <- parse_annotations(jdata)
@@ -82,6 +65,8 @@ photo_id <- aggregate_photoID(with_rsid, my_t0)
 photo_id <- photo_id[,c("subject_id", "classification_id", 
                         "gold_standard", "choice")]
 
+
+
 # remove any of the non-retired images
 
 
@@ -94,7 +79,44 @@ photo_id <- left_join(my_photos[,c("subject_id", "classification_id")],
                       my_t0, by = "classification_id")
 
 
+# my subjects
+all_subjects <- read.csv("wildlife-of-los-angeles-subjects.csv", stringsAsFactors = FALSE)[,c('subject_id', 'subject_set_id', 'retired_at','retirement_reason', 'metadata')]
 
+
+all_subjects <- all_subjects[which(all_subjects$subject_set_id %in% c(74386,
+                                                                      74358,
+                                                                      72637,
+                                                                      74660,
+                                                                      74661)),]
+yo <- stream_in(textConnection(all_subjects$metadata))
+
+test <- cbind(all_subjects[,-5 ], yo)
+
+test2 <- left_join(both_calc, test, by = 'subject_id')
+
+test2 <- test2[order(test2$image_1),]
+
+hm <- strsplit(test2$image_1, "_")
+test2$location <- sapply(hm, function(x) paste0(x[1],"_",x[2]))
+
+write.csv(test2, 'photos_with_tags.csv')
+
+
+my_data <- read.csv('photos_with_tags.csv', stringsAsFactors = FALSE)
+my_data <- my_data[which(my_data$prop == 1),]
+my_data <- my_data[-grep(',', my_data$species),]
+     
+     
+
+# parse down photo ID now
+photo_id <- photo_id[which(photo_id$subject_id %in% all_subjects$subject_id),]
+photo_id <- left_join(photo_id, all_subjects, by = 'subject_id')
+
+
+
+
+
+# keep only those in specific subject sets
 my_users <- parse_users(jdata)
 
 table(jdata$workflow_id)
